@@ -1,0 +1,431 @@
+import mysql.connector
+import time
+import sys,subprocess
+from prettytable import PrettyTable
+from datetime import datetime,timedelta
+def clear_screen():
+    subprocess.run('cls',shell=True)
+def enterarow():# to write rows
+    clear_screen()
+    n=1
+    while n==1:
+       E=int(input('Enter e_no of the book which you want to add:'))
+       an=input('Enter The Author\'s Name:')
+       bn=input('Enter The Book\'s Name:')
+       pn=input('Enter The Publication:')
+       g=input('Enter The Genre:')
+       s=input('enter status as available or lending')
+       if s=='lending':
+           god=input("enter date of lending in dd-mm-yyyy format")
+           userph=input("enter the phone no. of the person book lent to")
+           gof=datetime.strptime(god,'%d-%m-%Y')
+           fog=gof + timedelta(days=15)
+           dday=fog.strftime('%Y-%m-%d')
+           
+           cur.execute("insert into shelf(e_no,author_name,book_name,publication,genre,status,godate,duedate,user)values\
+                     (%s,%s,%s,%s,%s,%s,%s,%s,%s)",(E,an,bn,pn,g,s,god,dday,userph))
+               
+       else:
+           cur.execute("insert into shelf(e_no,author_name,book_name,publication,genre,status) values(%s,%s,%s,%s,%s,%s)",(E,an,bn,pn,g,s))
+       con.commit()      
+       print('Row Added')
+       print('_'*60)    
+       n=int(input('\nTo continue adding rows press 1,press any key to continue'))
+       print('_'*60) 
+    
+       
+def deleterow():# to delete a record
+    clear_screen()
+    n=1
+    while n==1:
+          an=int(input('Type 1 to delete a record using author\'s name\nType 2 to delete a record using book name\nType 3 to delete a record using genre\
+                        \nType 4 to delete a record using publication\nEnter value: '))
+          clear_screen()
+          
+          if an ==1:
+                a=input('Enter the name of the author whose book you want to delete')
+                cur.execute('delete from shelf where author_name=%s',(a,))
+                print('Row Deleted')
+          elif an==2:
+                b=input('Enter the name of the book you want to delete')
+                cur.execute('delete from shelf where book_name=%s',(b,))
+                print('Row Deleted')
+          elif an==3:
+                c=input('Enter the Genre of the book you want to delete')
+                cur.execute('delete from shelf where genre=%s',(c,))
+                print('Row Deleted')
+          elif an==4:
+                d=input('Enter the publication of the book you want to delete')
+                cur.execute('delete from shelf where publication=%s',(d,))
+          print('_'*60)    
+          n=int(input('\nTo continue making changes press 1,press any key to continue'))
+          print('_'*60) 
+          clear_screen()
+          
+    con.commit()
+def sort():# sorts
+    clear_screen()
+    n=int(input('If you want to sort the books in alphabetical order of their Author\'s Name, Type 1\
+                \nIf you want to sort the books in alphabetical order of their name, Type 2\
+                 \nIf you want to sort the books by genre, Type 3\nIf you want to sort the books by ecode, Type 4\
+                 \nIf you want to sort the books by publication, Type 5\
+                \nif you want to sort the books in order of availibility ,type 6\nEnter Value'))
+    clear_screen()
+    if n==1:
+        cur.execute('select * from shelf order by author_name')
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==2:
+        cur.execute('select * from shelf order by book_name')
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==3:
+        cur.execute('select * from shelf group by genre')
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==4:
+        cur.execute('select * from shelf order by e_no')
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==5:
+        cur.execute('select * from shelf group by publication')
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==6:
+        cur.execute("select * from shelf where status in('available')")
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+        
+    else:
+        print('Please Enter Valid Data')
+        
+    con.commit()
+def clear():#to delete everything in the database
+    clear_screen()
+    cur.execute('drop database library')
+    print("database deleted")
+    con.commit()
+    
+    
+def find():#to find
+    clear_screen()
+    n=int(input('Type 1 to find using eno.\nType 2 to find using author\'s name\nType 3 to find using book name\
+               \ntype 4 to find using publication\ntype 5 to find using genre\nEnter Value: '))
+    clear_screen()
+    if n==1:
+        s=int(input('Enter the e_no you want to find'))
+        cur.execute('select * from shelf where e_no=%s ',(s,))
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==2:
+        s=(input('Enter the author you want to find'))
+        cur.execute('select * from shelf where author_name=%s ',(s,))
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==3:
+        s=(input('Enter the book you want to find')) 
+        cur.execute('select * from shelf where book_name=%s',(s,) )
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==4:
+        s=(input('Enter the Publication to be searched'))
+        cur.execute('select * from shelf where publication=%s',(s,))
+        data=cur.fetchall()
+        for x in data:
+             print(x)
+    elif n==5:
+        s=(input('Enter the Genre you want to find'))
+        cur.execute('select * from shelf where genre=%s',(s,) )
+        data=cur.fetchall()
+        for x in data:
+             print(x)       
+    else:
+        print('Please Enter Valid Data')
+    con.commit()
+
+    
+def replace():# replaces using book name
+    clear_screen()
+    s=input('Enter the bookname of the row to which you want to make changes')
+    n=int(input('Type 1 if you want to make changes in the name of the Author\nType 2 if you want to make changes in the name of the book\
+                \nType 3 if you want to make changes in publication\nType 4 if you want to make changes in genre\nEnter Value: '))
+    clear_screen()
+    global p
+    if n==1:
+        p=input('Enter the new Author\'s name: ')
+        cur.execute('update shelf set author_name=%s where book_name=%s',(p,s))
+    elif n==2:
+        p=input('Enter the new Book\'s name: ')
+        cur.execute('update shelf set book_name=%s where book_name=%s',(p,s))
+    elif n==3:
+        p=input('Enter the new Publication: ')
+        cur.execute('update shelf set publication=%s where book_name=%s',(p,s))
+    elif n==4:
+        p=input('Enter the new name of the Genre')
+        cur.execute('update shelf set genre=%s where book_name=%s',(p,s))
+    else:
+        print('Invalid Choice')
+    print("the changes made is as shown" )   
+    cur.execute("select * from shelf where book_name=%s",(p,))
+    data=cur.fetchone()
+    print(data)
+    con.commit()
+
+    
+def goneout():
+    clear_screen()
+    cur.execute("select book_name,godate,duedate,user from shelf where status in('lending')")
+    data=cur.fetchall()
+    heading=PrettyTable(['book name','date of lending','due date','user phone no.'])
+    heading.add_rows(data)
+    heading.add_autoindex('Sr.no')
+    print(heading)
+    
+
+def update():
+    clear_screen()
+    n=int(input("press 1 for return of book \npress 2 for lending of book\nresponse:"))
+    seetable()
+    if n==1:
+        b=int(input('chosen e no.'))
+        cur.execute("update shelf set status='available',user=0,godate=NULL,duedate=NULL where e_no=%s",(b,))
+        print("record updated")
+        con.commit()
+    elif n==2:
+        b=int(input('chosen serial no.'))
+        c=int(input('enter user phone no.'))
+        d=input('enter lending date in dd-mm-yyyy')
+        gof=datetime.strptime(d,'%d-%m-%Y')
+        fog=gof + timedelta(days=15)
+        dday=fog.strftime('%Y-%m-%d')
+        cur.execute("update shelf set status='lending',user=%s,godate=%s,duedate=%s where e_no=%s",(c,d,dday,b))
+        print("record updated")
+        con.commit()
+    else:
+        print('invalid choice')
+   
+def seetable():
+    clear_screen()
+    heading=PrettyTable(['e.no','authors name','book name','publication','genre','status','date of lending','due date','user ph.no.'])
+    cur.execute('select * from shelf')
+    b = cur.fetchall()    
+    heading.add_rows(b)
+    heading.add_autoindex('Sr.no')
+    print(heading)
+
+def menu():
+    clear_screen()
+    while True:
+          print('-'*18)
+          print("MAIN MENU")
+          print('-'*18)
+          s=int(input("1.for user related formatting,press 1\n2.for table related formatting,press 2\
+                  \n3.to access the tables,press 3\
+                \n4.to clear database,press 4\n5.to exit press 5\nenter value:"))
+          clear_screen()
+          if s==1:
+              print('*'*18)
+              print("SUB MENU")
+              print('*'*18)
+              User()
+          elif s==2:
+              print('*'*18)
+              print("SUB MENU")
+              print('*'*18)
+              n=int(input('1.enter new book information\n2.delete book information\n3.change book related information\
+                 \n4.change book status(available or lending)\n5.to return to main menu\nenter value:'))
+              if n==1:
+                  enterarow()
+              elif n==2:
+                deleterow()
+              elif n==3:
+                replace()
+              elif n==4:
+                update()
+              elif n==5:
+                break
+              else:
+                print("invalid option")
+          elif s==3:
+              print('*'*18)
+              print("SUB MENU")
+              print('*'*18)
+              n=int(input('1.sort the table in desire way\n2.find information in the table\
+                   \n3.to see the books that have gone for lending\n4.to see all the books and their data\
+                   \n5.to see all the users and their data\n6.to return to main menu\n enter value:'))
+              if n==1:
+                sort()
+              elif n==2:
+                find()
+              elif n==3:
+                goneout()
+              elif n==4:
+                seetable()
+              elif n==5:
+                seeuser()
+              elif n==6:
+                break
+              else:
+                print("invalid option")
+          elif s==4:
+            clear()
+            print('database cleared')
+          elif s==5:
+            print('EXITING...')
+            quit()
+          else:
+              print('Invalid Choice')
+              print('_'*60)    
+              n=input('\nTo exit the menu press 1,press any no. to continue')
+              print('_'*60)
+              if n==1:
+                  quit()
+              else:
+                  continue
+          
+    con.commit()
+def User():
+    clear_screen()
+    n=int(input("to enter user information press 1\nto delete user information press 2\
+                \nto find user specific information press 3\nto exit sub menu press 4\nenter value:"))
+    clear_screen()
+    if n==1:
+             v=int(input("enter the no. users to add"))
+             for i in range(v):      
+                E=int(input('Enter membership no. of the member'))
+                an=input('Enter name of the member ')
+                bn=input('Enter the address(only the area):')
+                pn=input('enter the name of the books lent,if no book lent enter :no books lent:')
+                g=input('Enter The phone number:')
+                l=[E,an,bn,pn,g]
+                cur.execute("insert into user(member_no,name,address,lent_books,ph_no)values\
+                     (%s,%s,%s,%s,%s)",(E,an,bn,pn,g))
+                con.commit()      
+                print('Row Added')
+                
+             menu()      
+    elif n==2:
+        
+            v=int(input("enter no. of users to delete"))
+            for i in range(v):
+                a=input('Enter the name of the user whose info you want to delete')
+                cur.execute('delete from user where name=%s',(a,))
+                print('Row Deleted')
+                
+            menu()        
+    elif n==3:
+        n=int(input('Type 1 to find using membership no\nType 2 to find using name\nType 3 to find using address\
+               \ntype 4 to find using lent books\ntype 5 to find using phone no.\nEnter Value: '))
+        if n==1:
+            s=int(input('Enter the member no.you want to find'))
+            cur.execute('select * from user where member_no=%s ',(s,))
+            data=cur.fetchall()
+            for x in data:
+                 print(x)
+        elif n==2:
+            s=(input('Enter the name of the person you want to find'))
+            cur.execute('select * from user where name=%s ',(s,))
+            data=cur.fetchall()
+            for x in data:
+                 print(x)
+        elif n==3:
+            s=(input('Enter the address of the person you want to find')) 
+            cur.execute('select * from user where address=%s',(s,) )
+            data=cur.fetchall()
+            for x in data:
+                 print(x)
+        elif n==4:
+            s=(input('Enter the lent books to be searched'))
+            cur.execute('select * from user where lent_books=%s',(s,))
+            data=cur.fetchall()
+            for x in data:
+                 print(x)
+        elif n==5:
+            s=(input('Enter the phone no.of the person you want to find'))
+            cur.execute('select * from user where ph_no=%s',(s,) )
+            data=cur.fetchall()
+            for x in data:
+                 print(x)         
+        else:
+            print('Please Enter Valid Data')
+    elif n==4:
+        menu()
+    menu()    
+    con.commit()    
+def seeuser():  
+
+    clear_screen()
+    cur.execute("select * from user")
+    x=cur.fetchall()
+    heading=PrettyTable(['membership no.','name','address','books lent','phone no.'])
+    heading.add_rows(x)
+    heading.add_autoindex('Sr.no')
+    print(heading)
+  
+#main prg
+print("*****************************************")
+print('project name-library management system')
+print('*****************************************') 
+admin="1234"
+con=mysql.connector.connect(host='localhost',user='root',password='idris',charset='utf8')
+cur=con.cursor()
+cur.execute("create database if not exists library")
+cur.execute("use library")
+cur.execute("create table if not exists shelf(e_no integer primary key ,author_name varchar(150),\
+book_name varchar(150) unique,publication varchar(150),genre varchar(150),status varchar(100),godate varchar(10)default NULL,\
+duedate varchar(100),user integer default NULL)")
+cur.execute("create table if not exists user(member_no integer unique,name varchar(150),\
+address varchar(150),lent_books varchar(150),ph_no integer primary key)")
+while True:
+    s=int(input("press 1 to sign in\npress 2 to sign up as a new user\nenter response:"))
+    clear_screen()    
+    if s==1:
+        user,password=input("enter username and password").split()
+        file=open("happy.txt","r")
+        user_data=file.readline()
+        x=user_data.split()
+        for i in x:
+            if i ==user+password:
+                print("signed in succesfully")
+                time.sleep(3)
+                menu()
+                
+        else:
+                print("incorrect password or username,try again")      
+                time.sleep(3)
+                clear_screen()
+            
+    elif s==2:
+        a=input("enter the admin code") 
+        if a==admin:
+            user=input("enter username")
+            password=input("enter password")
+            user_data=user+password+" "
+            file=open("happy.txt","a")
+            file.write(user_data)
+            file.close()
+            print("signed up succesfully")
+            time.sleep(2)
+            clear_screen()
+
+
+        else:
+            print("incorrect admin code,try again") 
+            time.sleep(3)
+            clear_screen()  
+#end of program            
+
+
+
+
+ 
+
